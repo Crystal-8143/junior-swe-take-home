@@ -14,17 +14,37 @@ const LOAN_TERM_MONTHS = 360; // 30 Years
 const INTEREST_RATE = 7.0; // 7.0% baseline interest rate
 const ASSESSMENT_RATE_BUFFER = 3.0; // 3.0% buffer added to interest rates
 
-// Legacy placeholder functions to replace with API calls
-function getTax(income) {
-    // REPLACE THIS
-    // Write your TAX API call code here.
-    return Math.round(income * 0.25);
+// Functions to replace with API calls
+async function getTax(income) {
+    const response = await fetch(
+        `http://localhost:3000/api/tax?income=${income}`,
+        {
+            headers: {
+                Authorization: "Bearer pat_abcdefghijklmnopqrstuvwxyz0123456789"
+            }
+        }
+    );
+    if (!response.ok) {
+        throw new Error(`Tax API request failed: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.tax;
 }
 
-function getHEM(income, dependents) {
-    // REPLACE THIS
-    // Write your HEM API call code here.
-    return 2000 + (dependents * 400);
+async function getHEM(income, dependents) {
+    const response = await fetch(
+        `http://localhost:3000/api/hem?income=${income}&dependents=${dependents}`,
+        {
+            headers: {
+                Authorization: "Bearer pat_abcdefghijklmnopqrstuvwxyz0123456789"
+            }
+        }
+    );
+    if (!response.ok) {
+        throw new Error(`HEM API request failed: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.hem;
 }
 
 /**
