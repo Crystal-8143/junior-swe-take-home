@@ -14,13 +14,17 @@ const LOAN_TERM_MONTHS = 360; // 30 Years
 const INTEREST_RATE = 7.0; // 7.0% baseline interest rate
 const ASSESSMENT_RATE_BUFFER = 3.0; // 3.0% buffer added to interest rates
 
-// Functions to replace with API calls
+// Development API configuration
+const API_BASE_URL = "http://localhost:3000";
+const API_TOKEN = "pat_abcdefghijklmnopqrstuvwxyz0123456789";
+
+// GET annual income tax from API
 async function getTax(income) {
     const response = await fetch(
-        `http://localhost:3000/api/tax?income=${income}`,
+        `${API_BASE_URL}/api/tax?income=${income}`,
         {
             headers: {
-                Authorization: "Bearer pat_abcdefghijklmnopqrstuvwxyz0123456789"
+                Authorization: `Bearer ${API_TOKEN}`
             }
         }
     );
@@ -31,12 +35,13 @@ async function getTax(income) {
     return data.tax;
 }
 
+// GET HEM monthly baseline from API
 async function getHEM(income, dependents) {
     const response = await fetch(
-        `http://localhost:3000/api/hem?income=${income}&dependents=${dependents}`,
+        `${API_BASE_URL}/api/hem?income=${income}&dependents=${dependents}`,
         {
             headers: {
-                Authorization: "Bearer pat_abcdefghijklmnopqrstuvwxyz0123456789"
+                Authorization: `Bearer ${API_TOKEN}`
             }
         }
     );
@@ -50,13 +55,13 @@ async function getHEM(income, dependents) {
 /**
  * Calculates the total borrowing power amount and the monthly repayment configuration
  */
-function calculateBorrowingPower(income, dependents, expenses, creditLimits, annualAssessmentRate) {
+async function calculateBorrowingPower(income, dependents, expenses, creditLimits, annualAssessmentRate) {
     // 1. Calculate Net Monthly Income after tax deductions
-    const annualTax = getTax(income);
+    const annualTax = await getTax(income);
     const netMonthlyIncome = (income - annualTax) / 12;
 
     // 2. Determine living expenses (User declared expenses vs HEM baseline, whichever is higher)
-    const baselineHEM = getHEM(income, dependents);
+    const baselineHEM = await getHEM(income, dependents);
     const totalLivingExpenses = Math.max(expenses, baselineHEM);
 
     // 3. Calculate credit card liability (~3% of total limits)
@@ -83,7 +88,7 @@ function calculateBorrowingPower(income, dependents, expenses, creditLimits, ann
     };
 }
 
-function runConsoleMode() {
+async function runConsoleMode() {
     const readline = require('readline');
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
@@ -93,12 +98,12 @@ function runConsoleMode() {
     rl.question("Gross Annual Income: $", (income) => {
         rl.question("Number of Dependents: ", (dependents) => {
             rl.question("Declared Monthly Expenses: $", (expenses) => {
-                rl.question("Total Credit Card Limits: $", (creditLimits) => {
-                    
+                rl.question("Total Credit Card Limits: $", async (creditLimits) => {
+                    try {
                     // Banks assess loans using base rate + buffer for safety
                     const assessmentRate = INTEREST_RATE + ASSESSMENT_RATE_BUFFER;
 
-                    const result = calculateBorrowingPower(
+                    const result = await calculateBorrowingPower(
                         parseFloat(income),
                         parseInt(dependents),
                         parseFloat(expenses),
@@ -109,8 +114,12 @@ function runConsoleMode() {
                     console.log("\n--- Calculation Summary ---");
                     console.log(`Maximum Borrowing Power at ${INTEREST_RATE}%: $${result.maxLoanAmount.toLocaleString()}`);
                     console.log(`Assumed Monthly Mortgage Repayment: $${result.monthlyRepayment.toLocaleString()} over 30 years`);
-                    
+                } catch (error) {
+                    console.error("Unable to calculate borrowing power:", error.message);
+                } finally {
                     rl.close();
+                }
+                    
                 });
             });
         });
@@ -121,4 +130,4 @@ if (require.main === module) {
     runConsoleMode();
 }
 
-module.exports = { calculateBorrowingPower };
+module.exports = { calculateBorrowingPower, getTax, getHEM };
