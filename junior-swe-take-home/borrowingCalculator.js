@@ -62,6 +62,10 @@ async function calculateBorrowingPower(income, dependents, expenses, creditLimit
 
     // 2. Determine living expenses (User declared expenses vs HEM baseline, whichever is higher)
     const baselineHEM = await getHEM(income, dependents);
+
+    console.log("Tax:", annualTax);
+    console.log("HEM:", baselineHEM);
+
     const totalLivingExpenses = Math.max(expenses, baselineHEM);
 
     // 3. Calculate credit card liability (~3% of total limits)
