@@ -112,7 +112,8 @@ async function runConsoleMode() {
                     );
 
                     console.log("\n--- Calculation Summary ---");
-                    console.log(`Maximum Borrowing Power at ${INTEREST_RATE}%: $${result.maxLoanAmount.toLocaleString()}`);
+                    console.log(`Maximum Borrowing Power: $${result.maxLoanAmount.toLocaleString()}`);
+                    console.log(`Assessment interest rate: ${assessmentRate}%`)
                     console.log(`Assumed Monthly Mortgage Repayment: $${result.monthlyRepayment.toLocaleString()} over 30 years`);
                 } catch (error) {
                     console.error("Unable to calculate borrowing power:", error.message);
