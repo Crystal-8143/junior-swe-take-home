@@ -29,7 +29,8 @@ async function getTax(income) {
         }
     );
     if (!response.ok) {
-        throw new Error(`Tax API request failed: ${response.status}`);
+        const error = await response.json();
+        throw new Error(error.message);
     }
     const data = await response.json();
     return data.tax;
@@ -46,7 +47,8 @@ async function getHEM(income, dependents) {
         }
     );
     if (!response.ok) {
-        throw new Error(`HEM API request failed: ${response.status}`);
+        const error = await response.json();
+        throw new Error(error.message);
     }
     const data = await response.json();
     return data.hem;

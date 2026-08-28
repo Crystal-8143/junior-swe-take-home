@@ -14,10 +14,15 @@ describe('Borrowing Power Calculator Tests', () => {
     assert.strictEqual(result.monthlyRepayment, 4600);
   });
 
-  it('should return 0 for invalid negative inputs', async function() {
+  it('should return 0 when monthly repayment capacity is negative', async function() {
     const result = await calculateBorrowingPower(30000, 3, 4000, 5000, 7.5);
     assert.strictEqual(result.maxLoanAmount, 0);
     assert.strictEqual(result.monthlyRepayment, 0);
+  });
+
+  it('should use HEM when it is higher than declared expenses', async function() {
+    const result = await calculateBorrowingPower(120000, 2, 1000, 0, 7.5);
+    assert.strictEqual(result.monthlyRepayment, 4900);
   });
 
 });
